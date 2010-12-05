@@ -1,0 +1,11 @@
+Here's a few places to get ARFF files:
+
+http://weka.sourceforge.net/wiki/index.php/Datasets
+http://sourceforge.net/project/showfiles.php?group_id=5091&package_id=95362
+http://axon.cs.byu.edu/~martinez/classes/478/stuff/UCI/
+
+
+
+Most of these files were constructed from the data at:
+
+http://archive.ics.uci.edu/ml/

@@ -1,0 +1,18 @@
+#############################################################################
+## 
+## The 3D Gesture User Interface Library 
+##
+## Author: Philip Yang
+##
+#############################################################################
+
+0. Introduction
+This is a 3D gesture based user interface library. It contains the following building blocks:
+     1. Gesture Recognition Engine
+     	A generic gesture recognizer that takes a set of training samples of 3D gestures. With proper
+	training, the user could use the learned classifier to recognize the gesture input which will
+	be used to interact with 3D (or 2D) objects.
+
+     2.	Smart Object Interface
+     	The object in the environment should be smart enough to interact with the gesture input by the 
+	user in order to foster smooth user experience. 	

@@ -1,0 +1,351 @@
+<html>
+<body>
+<h2>waffles_transform</h2>
+<p>
+	A command-line tool for transforming datasets. It contains import/export functionality,
+	unsupervised algorithms, and other useful transforms that you may wish to perform on a dataset.
+	Here's the usage information:</p>
+<pre>
+
+waffles_transform [command]
+   Transform data, reduce dimensionality, cluster, shuffle rows, swap columns,
+   matrix operations, etc.
+   add [dataset1] [dataset2]
+      Adds two matrices together element-wise. Results are printed to stdout.
+      [dataset1]
+         The filename of the first matrix in ARFF format.
+      [dataset2]
+         The filename of the second matrix in ARFF format.
+   addindexcolumn [dataset] &lt;options&gt;
+      Add a column that Specify the index of each row.
+      [dataset]
+         The filename of a dataset in ARFF format
+      &lt;options&gt;
+         -start [value]
+            Specify the initial index. (the default is 0).
+         -increment [value]
+            Specify the increment amount. (the default is 1).
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator.
+         -excludelast [n]
+            Do not add noise to the last [n] columns.
+   addnoise [dataset] [dev] &lt;options&gt;
+      Add Gaussian noise with the specified deviation to all the elements in
+      the dataset. (Assumes that the values are all continuous.)
+      [dataset]
+         The filename of a dataset in ARFF format
+      [dev]
+         The deviation of the Gaussian noise
+   agglomerative [dataset] [clusters]
+      Performs agglomerative clustering. Outputs the cluster id for each row.
+   align [a] [b]
+      Translates and rotates dataset [b] to minimize mean squared difference
+      with dataset [a]. (Uses the Kabsch algorithm.)
+      [a]
+         The filename of a dataset in ARFF format
+      [b]
+         The filename of a dataset in ARFF format
+   attributeselector [dataset] &lt;options&gt;
+      Make a ranked list of attributes from most to least salient. The ranked
+      list is printed to stdout. Attributes are zero-indexed.
+      [dataset]
+         The filename of a dataset in ARFF format
+      &lt;options&gt;
+         -out [n] [filename]
+            Save a dataset containing only the [n]-most salient features to
+            [filename].
+         -seed [value]
+            Specify a seed for the random number generator.
+         -labeldims [n]
+            Specify the number of dimensions in the label (output) vector. The
+            default is 1. (Don't confuse this with the number of class labels.
+            It only takes one dimension to specify a class label, even if there
+            are k possible labels.)
+   autocorrelation [dataset]
+      Compute the autocorrelation of the specified time-series data.
+   blendembeddings [data-orig] [neighbor-finder] [data-a] [data-b] &lt;options&gt;
+      Compute a blended "average" embedding from two reduced-dimensionality
+      embeddings of some data.
+      [data-orig]
+         The filename of the original high-dimensional data in ARFF format.
+      [data-a]
+         The first reduced dimensional embedding of [data-orig]
+      [data-b]
+         The second reduced dimensional embedding of [data-orig]
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator.
+   breadthfirstunfolding [dataset] [neighbor-finder] [target_dims] &lt;options&gt;
+      A manifold learning algorithm.
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator.
+         -reps [n]
+            The number of times to compute the embedding and blend the results
+            together. The default is 1.
+   nominaltocat [dataset] &lt;options&gt;
+      Convert the dataset to a categorical distribution of all real values.
+      Columns with only two nominal values are converted to 0 or 1. If there
+      are three or more possible values, a column is created for each value.
+      The column corresponding to the value is set to 1, and the others are set
+      to 0. (This is similar to Weka's NominalToBinaryFilter.)
+      &lt;options&gt;
+         -maxvalues [cap]
+            Specify the maximum number of nominal values for which to create
+            new columns. The default is 12.
+   cholesky [dataset]
+      Compute the cholesky decomposition of the specified matrix.
+   correlation [dataset] [attr1] [attr2] &lt;options&gt;
+      Compute the linear correlation coefficient of the two specified
+      attributes.
+      [dataset]
+         The filename of a dataset in ARFF format.
+      [attr1]
+         A zero-indexed attribute number.
+      [attr2]
+         A zero-indexed attribute number.
+      &lt;options&gt;
+         -aboutorigin
+            Compute the correlation about the origin. (The default is to
+            compute it about the mean.)
+   determinant [dataset]
+      Compute the determinant of the specified matrix.
+      [dataset]
+         The filename of a dataset in ARFF format.
+   discretize [dataset] &lt;options&gt;
+      Discretizes the continuous attributes in the specified dataset.
+      [dataset]
+         The filename of a dataset in ARFF format.
+      &lt;options&gt;
+         -buckets [count]
+            Specify the number of buckets to use. The default is the square
+            root of the number of rows in the dataset.
+         -colrange [first] [last]
+            Specify a range of columns. Only continuous columns in the
+            specified range will be modified. (Columns are zero-indexed.)
+   dropcolumns [dataset] [column-list]
+      Remove one or more columns from a dataset and prints the results to
+      stdout. (The input file is not modified.)
+      [column-list]
+         A list of zero-indexed columns to drop. Example: 0,2-5,7
+   dropmissingvalues [dataset]
+      Remove all rows that contain missing values.
+   export [dataset] &lt;options&gt;
+      Print the data as a list of comma separated values without any meta-data.
+      &lt;options&gt;
+         -tab
+            Separate with tabs instead of commas.
+         -space
+            Separate with spaces instead of commas.
+   droprows [dataset] [after-size]
+      Removes all rows except for the first [after-size] rows.
+   import [dataset] &lt;options&gt;
+      Convert a text file of comma separated (or otherwise separated) values to
+      a .arff file. The meta-data is automatically determined. The .arff file
+      is printed to stdout. This makes it easy to operate on structured data
+      from a spreadsheet, database, or pretty-much any other source.
+      &lt;options&gt;
+         -tab
+            Data elements are separated with a tab character instead of a
+            comma.
+         -space
+            Data elements are separated with a single space instead of a comma.
+         -whitespace
+            Data elements are separated with an arbitrary amount of whitespace.
+         -semicolon
+            Data elements are separated with semicolons.
+         -separator [char]
+            Data elements are separated with the specified character.
+         -columnnames
+            Use the first row of data for column names.
+   isomap [dataset] [neighbor-finder] [target_dims] &lt;options&gt;
+      Use the Isomap algorithm to reduce dimensionality.
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator.
+   kmeans [dataset] [clusters]
+      Performs k-means clustering. Outputs the cluster id for each row.
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator.
+   kmedoids [dataset] [clusters]
+      Performs k-medoids clustering. Outputs the cluster id for each row.
+   lle [dataset] [neighbor-finder] [target_dims] &lt;options&gt;
+      Use the LLE algorithm to reduce dimensionality.
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator.
+   manifoldsculpting [dataset] [neighbor-finder] [target_dims] &lt;options&gt;
+      Use the Manifold Sculpting algorithm to reduce dimensionality.
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator.
+         -continue [dataset]
+            Continue refining the specified reduced-dimensional results. (This
+            feature enables Manifold Sculpting to improve upon its own results,
+            or to refine the results from another dimensionality reduction
+            algorithm.)
+         -scalerate [value]
+            Specify the scaling rate. The default is 0.999. A value close to 1
+            will give better results, but will cause the algorithm to take
+            longer.
+   measuremeansquarederror [dataset1] [dataset2] &lt;options&gt;
+      Print the mean squared error between two datasets. (Both datasets must be
+      the same size.)
+      &lt;options&gt;
+         -fit
+            Use a hill-climber to find an affine transformation to make
+            dataset2 fit as closely as possible to dataset1. Report results
+            after each iteration.
+   mergehoriz [dataset1] [dataset2]
+      Merge two (or more) datasets horizontally. All datasets must already have
+      the same number of rows. The resulting dataset will have all the columns
+      of both datasets.
+   mergevert [dataset1] [dataset2]
+      Merge two datasets vertically. Both datasets must already have the same
+      number of columns. The resulting dataset will have all the rows of both
+      datasets.
+   multidimensionalscaling [distance-matrix] [target-dims]
+      Perform MDS on the specified [distance-matrix].
+      [distance-matrix]
+         The filename of an arff file that contains the pair-wise distances (or
+         dissimilarities) between every pair of points. It must be a square
+         matrix of real values. Only the upper-triangle of this matrix is
+         actually used. The lower-triangle and diagonal is ignored.
+      &lt;options&gt;
+         -squareddistances
+            The distances in the distance matrix are squared distances, instead
+            of just distances.
+   multiply [a] [b] &lt;options&gt;
+      Matrix multiply [a] x [b]. Both arguments are the filenames of .arff
+      files. Results are printed to stdout.
+      &lt;options&gt;
+         -transposea
+            Transpose [a] before multiplying.
+         -transposeb
+            Transpose [b] before multiplying.
+   multiplyscalar [dataset1] [scalar]
+      Multiply all elements in [dataset1] by the specified scalar. Results are
+      printed to stdout.
+   normalize [dataset] &lt;options&gt;
+      Normalize all continuous attributes to fall within the specified range.
+      (Nominal columns are left unchanged.)
+      &lt;options&gt;
+         -range [min] [max]
+            Specify the output min and max values. (The default is 0 1.)
+   pca [dataset] [target_dims]
+      Projects the data into the specified number of dimensions with principle
+      component analysis. (Prints results to stdout. The input file is not
+      modified.)
+   principalcomponents [dataset] [k] &lt;options&gt;
+      Compute the first k principal components of [dataset] and print the
+      results to stdout.
+      &lt;options&gt;
+         -aboutorigin
+            Compute the principal components about the origin. (The default is
+            to compute them about the mean.)
+   pseudoinverse [dataset]
+      Compute the Moore-Penrose pseudo-inverse of the specified matrix of real
+      values.
+   replacemissingvalues [dataset] &lt;options&gt;
+      Replace any missing values with another randomly chosen value from the
+      dataset.
+      &lt;options&gt;
+         -seed
+            Specify a seed for the random number generator.
+   reducedrowechelonform [dataset]
+      Convert a matrix to reduced row echelon form. Results are printed to
+      stdout.
+   shuffle [dataset] &lt;options&gt;
+      Shuffle the row order.
+      -seed [value]
+         Specify a seed for the random number generator.
+   significance [dataset] [attr1] [attr2] &lt;options&gt;
+      Compute statistical significance values for the two specified attributes.
+      [dataset]
+         The filename of a .arff file.
+      [attr1]
+         A zero-indexed column number.
+      [attr2]
+         A zero-indexed column number.
+      &lt;options&gt;
+         -tol [value]
+            Sets the tolerance value for the Wilcoxon Signed Ranks test. The
+            default value is 0.001.
+   sortcolumn [dataset] [col] &lt;options&gt;
+      Sort the rows in [dataset] such that the values in the specified column
+      are in ascending order and print the results to to stdout. (The input
+      file is not modified.)
+      [dataset]
+         The filename of a dataset in ARFF format.
+      [col]
+         The zero-indexed column number in which to sort
+      &lt;options&gt;
+         -descending
+            Sort in descending order instead of ascending order.
+   sparsehuffle [sparse-matrix] &lt;options&gt;
+      Shuffles the row order or a sparse matrix.
+      [sparse-matrix]
+         The filename of a sparse matrix (not an ARFF file).
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator.
+   sparsesplit [sparse-matrix] [rows] [filename1] [filename2]
+      Splits a sparse matrix into two datasets. Nothing is printed to stdout.
+      [sparse-matrix]
+         The filename of a sparse matrix.
+      [rows]
+         The number of rows to put in the first file. The rest go in the second
+         file.
+   split [dataset] [rows] [filename1] [filename2]
+      Split a dataset into two datasets. (Nothing is printed to stdout.)
+      [dataset]
+         The filename of a datset in .arff format.
+      [rows]
+         The number of rows to go into the first file. The rest go in the
+         second file.
+   squareddistance [a] [b]
+      Computes the sum and mean squared distance between dataset [a] and [b].
+      ([a] and [b] are each the names of files in .arff format. They must have
+      the same dimensions.)
+   svd [matrix] &lt;options&gt;
+      Compute the singular value decomposition of a matrix.
+      [matrix]
+         A .arff file containing the matrix values.
+      &lt;options&gt;
+         -ufilename [filename]
+            Set the filename to which U will be saved. U is the matrix in which
+            the columns are the eigenvectors of [matrix] times its transpose.
+            The default is u.arff.
+         -sigmafilename [filename]
+            Set the filename to which Sigma will be saved. Sigma is the matrix
+            that contains the singular values on its diagonal. All values in
+            Sigma except the diagonal will be zero. If this option is not
+            specified, the default is to only print the diagonal values (not
+            the whole matrix) to stdout. If this options is specified, nothing
+            is printed to stdout.
+         -vfilename [filename]
+            Set the filename to which V will be saved. V is the matrix in which
+            the row are the eigenvectors of the transpose of [matrix] times
+            [matrix]. The default is v.arff.
+         -maxiters [n]
+            Specify the number of times to iterate before giving up. The
+            default is 100, which should be sufficient for most problems.
+   swapcolumns [dataset] [col1] [col2]
+      Swap two columns in the specified dataset and prints the results to
+      stdout. (Columns are zero-indexed.)
+   transition [action-sequence] [state-sequence] &lt;options&gt;
+      Given a sequence of actions and a sequence of states (each in separate
+      datasets), this generates a single dataset to map from action-state pairs
+      to the next state. This would be useful for generating the data to train
+      a transition function.
+      &lt;options&gt;
+         -delta
+            Predict the delta of the state transition instead of the new state.
+   transpose [dataset]
+      Transpose the data such that columns become rows and rows become columns.
+
+</pre>
+</body>
+</html>

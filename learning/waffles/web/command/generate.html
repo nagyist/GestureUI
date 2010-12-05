@@ -1,0 +1,209 @@
+<html>
+<body>
+<h2>waffles_generate</h2>
+<p>
+	A command-line tool to help generate various types of data.
+	(Most of the datasets it generates are for testing manifold learning
+	algorithms. I add them as I need them.) Here's the usage information:</p>
+<pre>
+
+waffles_generate [command]
+   Generate certain useful datasets
+   crane &lt;options&gt;
+      Generate a dataset where each row represents a ray-traced image of a
+      crane with a ball.
+      &lt;options&gt;
+         -saveimage [filename]
+            Save an image showing all the frames.
+         -ballradius [size]
+            Specify the size of the ball. The default is 0.3.
+         -frames [horiz] [vert]
+            Specify the number of frames to render.
+         -size [wid] [hgt]
+            Specify the size of each frame.
+         -blur [radius]
+            Blurs the images. A good starting value might be 5.0.
+         -gray
+            Use a single grayscale value for every pixel instead of three (red,
+            green, blue) channel values.
+   cube [n]
+      returns data evenly distributed on the surface of a unit cube. Each side
+      is sampled with [n]x[n] points. The total number of points in the dataset
+      will be 6*[n]*[n]-12*[n]+8.
+   docstosparsematrix &lt;options&gt; [folder1] [folder2] ...
+      Converts a set of documents to a sparse matrix. [folder1] should contain
+      all of the documents in class1. [folder2] should contain all the
+      documents in class2, and so forth. The words are filtered against a
+      common set of stop words. Also, words less than 4 letters are ignored.
+      Currently, only .txt and .html documents are supported. Other file types
+      are ignored. Each row in the sparse matrix represents one of the
+      documents. If there is more than one folder/class, then an additional
+      column is added for the class label. Subdirectories are not followed.
+      Results are saved to a text file in compressed-column format. A mapping
+      from row number to document filename is printed to stdout.
+      &lt;options&gt;
+         -nostem
+            Specifies not to stem the words. (The default is to use the Porter
+            stemming algorithm.)
+         -binary
+            Just use the value 1 if the word occurs in a document. The default
+            is to compute the somewhat more meaningful value: a*log(b/c)/d,
+            where a=the number of times the word occurs in this document,
+            b=total number of documents, c=number of documents that contain
+            this word, and d=the max number of times this word occurs in any
+            document.
+         -outfile [filename]
+            Specify the filename for the sparse matrix. The default is
+            "docs.sparse".
+         -vocabfile [filename]
+            Save the vocabulary of words to the specified file. The default is
+            to not save the list of words. Note that the words will be stemmed
+            (unless -nostem was specified), so it is normal for many of them to
+            appear misspelled.
+   entwinedspirals [points] &lt;options&gt;
+      Generates points that lie on an entwined spirals manifold.
+      [points]
+         The number of points with which to sample the manifold.
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator.
+         -reduced
+            Generate intrinsic values instead of extrinsic values. (This might
+            be useful to empirically measure the accuracy of a manifold
+            learner.)
+   fishbowl [n] &lt;option&gt;
+      Generate samples on the surface of a fish-bowl manifold.
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator.
+         -opening [size]
+            the size of the opening. (0.0 = no opening. 0.25 = default. 1.0 =
+            half of the sphere.)
+   gridrandomwalk [arff-file] [width] [samples] &lt;options&gt;
+      Generate a sequence of action-observation pairs by randomly walking
+      around on a grid of observation vectors.
+      [arff-file]
+         The filename of an arff file containing observation vectors arranged
+         in a grid.
+      [width]
+         The width of the grid.
+      [samples]
+         The number of samples to take. In other words, the length of the
+         random walk.
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator.
+         -start [x] [y]
+            Specifies the starting state. The default is to start in the center
+            of the grid.
+         -obsfile [filename]
+            Specify the filename for the observation sequence data. The default
+            is observations.arff.
+         -actionfile [filename]
+            Specify the filename for the actions data. The default is
+            actions.arff.
+   imagetranslatedovernoise [png-file] &lt;options&gt;
+      Sample a manifold by translating an image over a background of noise.
+      [png-file]
+         The filename of a png image.
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator.
+         -reduced
+            Generate intrinsic values instead of extrinsic values. (This might
+            be useful to empirically measure the accuracy of a manifold
+            learner.)
+   noise [rows] &lt;options&gt;
+      Generate random data by sampling from a distribution.
+      [rows]
+         The number of patterns to generate.
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator.
+         -dist [distribution]
+            Specify the distribution. The default is normal 0 1
+            beta [alpha] [beta]
+            binomial [n] [p]
+            categorical 3 [p0] [p1] [p2]
+               A categorical distribution with 3 classes. [p0], [p1], and [p2]
+               specify the probabilities of each of the 3 classes. (This is
+               just an example. Other values besides 3 may be used for the
+               number of classes.)
+            cauchy [median] [scale]
+            chisquare [t]
+            exponential [beta]
+            f [t] [u]
+            gamma [alpha] [beta]
+            gaussian [mean] [deviation]
+            geometric [p]
+            logistic [mu] [s]
+            lognormal [mu] [sigma]
+            normal [mean] [deviation]
+            poisson [mu]
+            softimpulse [s]
+            spherical [dims] [radius]
+            student [t]
+            uniform [a] [b]
+            weibull [gamma]
+   scalerotate [png-file] &lt;options&gt;
+      Generate a dataset where each row represents an image that has been
+      scaled and rotated by various amounts. Thus, these images form an
+      open-cylinder (although somewhat cone-shaped) manifold.
+      &lt;options&gt;
+         -saveimage [filename]
+            Save a composite image showing all the frames in a grid.
+         -frames [rotate-frames] [scale-frames]
+            Specify the number of frames. The default is 40 15.
+         -arc [radians]
+            Specify the rotation amount. The default is 6.2831853... (2*PI).
+   scurve [points] &lt;options&gt;
+      Generate points that lie on an s-curve manifold.
+      [points]
+         The number of points with which to sample the manifold
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator.
+         -reduced
+            Generate intrinsic values instead of extrinsic values. (This might
+            be useful to empirically measure the accuracy of a manifold
+            learner.)
+   selfintersectingribbon [points] &lt;options&gt;
+      Generate points that lie on a self-intersecting ribbon manifold.
+      [points]
+         The number of points with which to sample the manifold.
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator.
+   swissroll [points] &lt;options&gt;
+      Generate points that lie on a swiss roll manifold.
+      [points]
+         The number of points with which to sample the manifold.
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator.
+         -reduced
+            Generate intrinsic values instead of extrinsic values. (This might
+            be useful to empirically measure the accuracy of a manifold
+            learner.)
+         -cutoutstar
+            Don't sample within a star-shaped region on the manifold.
+   windowedimage [png-file] &lt;options&gt;
+      Sample a manifold by translating a window over an image. Each pattern
+      represents the windowed portion of the image.
+      [png-file]
+         The filename of the png image from which to generate the data.
+      &lt;options&gt;
+         -reduced
+            Generate intrinsic values instead of extrinsic values. (This might
+            be useful to empirically measure the accuracy of a manifold
+            learner.)
+         -stepsizes [horiz] [vert]
+            Specify the horizontal and vertical step sizes. (how many pixels to
+            move the window between samples.)
+         -windowsize [width] [height]
+            Specify the size of the window. The default is half the width and
+            height of [png-file].
+
+</pre>
+</body>
+</html>

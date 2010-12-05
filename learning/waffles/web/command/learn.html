@@ -1,0 +1,553 @@
+<html>
+<body>
+<h2>waffles_learn</h2>
+<p>
+	A command-line tool that wraps supervised and semi-supervised learning algorithms.
+	Here's the usage information:</p>
+<pre>
+
+waffles_learn [command]
+   Supervised learning, transduction, cross-validation, etc.
+   train &lt;options&gt; [dataset] &lt;data_opts&gt; [algorithm]
+      Trains a supervised learning algorithm. The trained model-file is printed
+      to stdout. (Typically, you will want to pipe this to a file.)
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator. (Use this option to
+            ensure that your results are reproduceable.)
+      [dataset]
+         The filename of a dataset in ".arff" format. The last attribute (or
+         the last n attributes if there are multiple label dims) is assumed to
+         be the label. (If you wish to predict values for another attribute,
+         you should swap columns to move it to the end.)
+      &lt;data_opts&gt;
+         -labels [attr_list]
+            Specify which attributes to use as labels. (If not specified, the
+            default is to use the last attribute for the label.) [attr_list] is
+            a comma-separated list of zero-indexed attributes. A hyphen may be
+            used to specify a range of values. Example: 0,2-5,7
+         -ignore [attr_list]
+            Specify attributes to ignore. [attr_list] is a comma-separated list
+            of zero-indexed attributes. A hyphen may be used to specify a range
+            of values. Example: 0,2-5,7
+   predict &lt;options&gt; [model-file] [dataset] &lt;data_opts&gt;
+      Predict labels for all of the patterns in [dataset]. Results are printed
+      in the form of a ".arff" file (including both features and predictions)
+      to stdout.
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator. (Use this option to
+            ensure that your results are reproduceable.)
+      [model-file]
+         The filename of a trained model. (This is the file to which you saved
+         the output when you trained a supervised learning algorithm.)
+      [dataset]
+         The filename of a dataset in ".arff" format. (There should already be
+         placeholder labels in this dataset. The placeholder labels will be
+         replaced in the output by the labels that the model predicts.)
+      &lt;data_opts&gt;
+         -labels [attr_list]
+            Specify which attributes to use as labels. (If not specified, the
+            default is to use the last attribute for the label.) [attr_list] is
+            a comma-separated list of zero-indexed attributes. A hyphen may be
+            used to specify a range of values. Example: 0,2-5,7
+         -ignore [attr_list]
+            Specify attributes to ignore. [attr_list] is a comma-separated list
+            of zero-indexed attributes. A hyphen may be used to specify a range
+            of values. Example: 0,2-5,7
+   predictonepattern &lt;options&gt; [model-file] [data-set] &lt;data_opts&gt; [pattern]
+      Predict labels for a single pattern and print the prediction to stdout.
+      Confidence levels are also reported.
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator. (Use this option to
+            ensure that your results are reproduceable.)
+      [model-file]
+         The filename of a trained model. (This is the file to which you saved
+         the output when you trained a supervised learning algorithm.)
+      [data-set]
+         The filename of a ".arff" file from which to obtain meta-data. This
+         can be the training set or the test set. It doesn't matter which,
+         because the data is ignored. Only the meta-data, such as the string
+         names of attribute values, are obtained from this dataset.
+      [pattern]
+         A list of feature values separated by spaces. (A "?" may be used for
+         unknown feature values if the model supports using unknown feature
+         values.)
+      &lt;data_opts&gt;
+         -labels [attr_list]
+            Specify which attributes to use as labels. (If not specified, the
+            default is to use the last attribute for the label.) [attr_list] is
+            a comma-separated list of zero-indexed attributes. A hyphen may be
+            used to specify a range of values. Example: 0,2-5,7
+         -ignore [attr_list]
+            Specify attributes to ignore. [attr_list] is a comma-separated list
+            of zero-indexed attributes. A hyphen may be used to specify a range
+            of values. Example: 0,2-5,7
+   test &lt;options&gt; [model-file] [dataset] &lt;data_opts&gt;
+      Test a trained model using some test data. Results are printed to stdout
+      for each dimension in the label vector. Predictive accuracy is reported
+      for nominal label dimensions, and mean-squared-error is reported for
+      continuous label dimensions.
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator. (Use this option to
+            ensure that your results are reproduceable.)
+      [model-file]
+         The filename of a trained model. (This is the file to which you saved
+         the output when you trained a supervised learning algorithm.)
+      [dataset]
+         The filename of a test dataset in ".arff" format. (This dataset must
+         have the same number of columns as the dataset with which the model
+         was trained.)
+      &lt;data_opts&gt;
+         -labels [attr_list]
+            Specify which attributes to use as labels. (If not specified, the
+            default is to use the last attribute for the label.) [attr_list] is
+            a comma-separated list of zero-indexed attributes. A hyphen may be
+            used to specify a range of values. Example: 0,2-5,7
+         -ignore [attr_list]
+            Specify attributes to ignore. [attr_list] is a comma-separated list
+            of zero-indexed attributes. A hyphen may be used to specify a range
+            of values. Example: 0,2-5,7
+      [model-file]
+         The filename of a trained model. (This is the file to which you saved
+         the output when you trained a supervised learning algorithm.) Only
+         incremental learning algorithms are supported.
+   transduce &lt;options&gt; [labeled-set] &lt;data_opts1&gt; [unlabeled-set] &lt;data_opts2&gt; [algorithm]
+      Predict labels for [unlabeled-set] based on the examples in
+      [labeled-set]. For most algorithms, this is the same as training on
+      [labeled-set] and then predicting labels for [unlabeled-set]. Some
+      algorithms, however, have no models. These can transduce, even though
+      they cannot be trained. Results are printed to stdout as a ".arff" file.
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator. (Use this option to
+            ensure that your results are reproduceable.)
+      [labeled-set]
+         The filename of a dataset in ".arff" format. The labels in this
+         dataset are used to infer labels for the unlabeled set. The last
+         attribute (or the last n attributes if there are multiple label dims)
+         is assumed to be the label. (If you wish to predict values for another
+         attribute, you should swap columns to move it to the end.)
+      [unlabeled-set]
+         The filename of a dataset in ".arff" format. This dataset must have
+         placeholder labels. The placeholder labels will be replaced in the
+         output with the new predicted labels.
+      &lt;data_opts1&gt;
+         -labels [attr_list]
+            Specify which attributes to use as labels. (If not specified, the
+            default is to use the last attribute for the label.) [attr_list] is
+            a comma-separated list of zero-indexed attributes. A hyphen may be
+            used to specify a range of values. Example: 0,2-5,7
+         -ignore [attr_list]
+            Specify attributes to ignore. [attr_list] is a comma-separated list
+            of zero-indexed attributes. A hyphen may be used to specify a range
+            of values. Example: 0,2-5,7
+      &lt;data_opts1&gt;
+         -labels [attr_list]
+            Specify which attributes to use as labels. (If not specified, the
+            default is to use the last attribute for the label.) [attr_list] is
+            a comma-separated list of zero-indexed attributes. A hyphen may be
+            used to specify a range of values. Example: 0,2-5,7
+         -ignore [attr_list]
+            Specify attributes to ignore. [attr_list] is a comma-separated list
+            of zero-indexed attributes. A hyphen may be used to specify a range
+            of values. Example: 0,2-5,7
+   transacc &lt;options&gt; [training-set] &lt;data_opts1&gt; [test-set] &lt;data_opts2&gt; [algorithm]
+      Measure the transductive accuracy of [algorithm] with respect to the
+      specified training and test sets. Results are printed to stdout for each
+      dimension in the label vector. Predictive accuracy is reported for
+      nominal label dimensions, and mean-squared-error is reported for
+      continuous label dimensions.
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator. (Use this option to
+            ensure that your results are reproduceable.)
+      [training-set]
+         The filename of a dataset in ".arff" format. The labels in this
+         dataset are used to infer labels for the unlabeled set. The last
+         attribute (or the last n attributes if there are multiple label dims)
+         is assumed to be the label. (If you wish to predict values for another
+         attribute, you should swap columns to move it to the end.)
+      [test-set]
+         The filename of a dataset in ".arff" format. This dataset must have
+         placeholder labels. The placeholder labels will be replaced in the
+         output with the new predicted labels.
+      &lt;data_opts1&gt;
+         -labels [attr_list]
+            Specify which attributes to use as labels. (If not specified, the
+            default is to use the last attribute for the label.) [attr_list] is
+            a comma-separated list of zero-indexed attributes. A hyphen may be
+            used to specify a range of values. Example: 0,2-5,7
+         -ignore [attr_list]
+            Specify attributes to ignore. [attr_list] is a comma-separated list
+            of zero-indexed attributes. A hyphen may be used to specify a range
+            of values. Example: 0,2-5,7
+      &lt;data_opts1&gt;
+         -labels [attr_list]
+            Specify which attributes to use as labels. (If not specified, the
+            default is to use the last attribute for the label.) [attr_list] is
+            a comma-separated list of zero-indexed attributes. A hyphen may be
+            used to specify a range of values. Example: 0,2-5,7
+         -ignore [attr_list]
+            Specify attributes to ignore. [attr_list] is a comma-separated list
+            of zero-indexed attributes. A hyphen may be used to specify a range
+            of values. Example: 0,2-5,7
+   splittest &lt;options&gt; [dataset] &lt;data_opts&gt; [algorithm]
+      This shuffles the data, then splits it into two parts, trains with one
+      part, and tests with the other. (This also works with model-free
+      algorithms.) Results are printed to stdout for each dimension in the
+      label vector. Predictive accuracy is reported for nominal label
+      dimensions, and mean-squared-error is reported for continuous label
+      dimensions.
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator. (Use this option to
+            ensure that your results are reproduceable.)
+         -trainratio [value]
+            Specify the amount of the data (between 0 and 1) to use for
+            training. The rest will be used for testing.
+         -reps [value]
+            Specify the number of repetitions to perform. The default is 1.
+      &lt;data_opts&gt;
+         -labels [attr_list]
+            Specify which attributes to use as labels. (If not specified, the
+            default is to use the last attribute for the label.) [attr_list] is
+            a comma-separated list of zero-indexed attributes. A hyphen may be
+            used to specify a range of values. Example: 0,2-5,7
+         -ignore [attr_list]
+            Specify attributes to ignore. [attr_list] is a comma-separated list
+            of zero-indexed attributes. A hyphen may be used to specify a range
+            of values. Example: 0,2-5,7
+   crossvalidate &lt;options&gt; [dataset] &lt;data_opts&gt; [algorithm]
+      Perform cross-validation with the specified dataset and algorithm.
+      Results are printed to stdout. (Supports model-free algorithms too.)
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator. (Use this option to
+            ensure that your results are reproduceable.)
+         -reps [value]
+            Specify the number of repetitions to perform. The default is 5.
+         -folds [value]
+            Specify the number of folds to use. The default is 2.
+         -succinct
+            Just report the average accuracy. Do not report deviation, or
+            results at each fold.
+      [dataset]
+         The filename of a dataset in ".arff" format. The last attribute (or
+         the last n attributes if there are multiple label dims) is assumed to
+         be the label. (If you wish to predict values for another attribute,
+         you should swap columns to move it to the end.)
+      &lt;data_opts&gt;
+         -labels [attr_list]
+            Specify which attributes to use as labels. (If not specified, the
+            default is to use the last attribute for the label.) [attr_list] is
+            a comma-separated list of zero-indexed attributes. A hyphen may be
+            used to specify a range of values. Example: 0,2-5,7
+         -ignore [attr_list]
+            Specify attributes to ignore. [attr_list] is a comma-separated list
+            of zero-indexed attributes. A hyphen may be used to specify a range
+            of values. Example: 0,2-5,7
+   precisionrecall &lt;options&gt; [dataset] &lt;data_opts&gt; [algorithm]
+      Compute the precision/recall for a dataset and algorithm
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator. (Use this option to
+            ensure that your results are reproduceable.)
+         -labeldims [n]
+            Specify the number of dimensions in the label (output) vector. The
+            default is 1. (Don't confuse this with the number of class labels.
+            It only takes one dimension to specify a class label, even if there
+            are k possible labels.)
+         -reps [n]
+            Specify the number of reps to perform. More reps means it will take
+            longer, but results will be more accurate. The default is 5.
+         -samples [n]
+            Specify the granularity at which to measure recall. The default is
+            100.
+      [dataset]
+         The filename of a dataset in ".arff" format. The last attribute (or
+         the last n attributes if there are multiple label dims) is assumed to
+         be the label. (If you wish to predict values for another attribute,
+         you should swap columns to move it to the end.)
+      &lt;data_opts&gt;
+         -labels [attr_list]
+            Specify which attributes to use as labels. (If not specified, the
+            default is to use the last attribute for the label.) [attr_list] is
+            a comma-separated list of zero-indexed attributes. A hyphen may be
+            used to specify a range of values. Example: 0,2-5,7
+         -ignore [attr_list]
+            Specify attributes to ignore. [attr_list] is a comma-separated list
+            of zero-indexed attributes. A hyphen may be used to specify a range
+            of values. Example: 0,2-5,7
+   trainsparse &lt;options&gt; [sparse-matrix] [algorithm]
+      Train the specified algorithm with the sparse matrix. Only incremental
+      learners (such as naivebayes or neuralnet) support this functionality. It
+      will print the trained model-file to stdout.
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator. (Use this option to
+            ensure that your results are reproduceable.)
+         -labeldims [n]
+            Specify the number of dimensions in the label (output) vector. The
+            default is 1. (Don't confuse this with the number of class labels.
+            It only takes one dimension to specify a class label, even if there
+            are k possible labels.)
+   predictsparse &lt;options&gt; [model-file] [sparse-matrix]
+      Predict labels for all of the rows in [sparse-matrix]. Label predictions
+      for each row are printed to stdout. (The features are not printed with
+      the predictions.)
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator. (Use this option to
+            ensure that your results are reproduceable.)
+      [sparse-matrix]
+         A dataset in the form of a sparse matrix. The dataset must have
+         placeholder labels, although these labels will be replaced with
+         predicted labels. (The last attribute is assumed to be the class
+         label.)
+   trainrecurrent &lt;options&gt; [method] [obs-data] [action-data] [context-dims] [algorithm] [algorithm]
+      Train a recurrent model of a dynamical system with the specified training
+      [method]. The training data is specified by [obs-data], which specifies
+      the sequence of observations, and [action-data], which specifies the
+      sequence of actions. [context-dims] specifies the number of dimensions in
+      the state-space of the system. The two algorithms specify the two
+      functions of a model of a dynamical system. The first [algorithm] models
+      the transition function. The second [algorithm] models the observation
+      function.
+      &lt;options&gt;
+         -seed [value]
+            Specify a seed for the random number generator. (Use this option to
+            ensure that your results are reproduceable.)
+         -paramdims 2 [wid] [hgt]
+            If observations are images, use this option to parameterize the
+            predictions, so only the channel values of each pixel are
+            predicted. (Other values besides 2 dimensions are also supported.)
+         -state [filename]
+            Save the estimated state to the specified file. (Only has effect if
+            moses is used as the training method.)
+         -validate [interval] 1 [obs] [action]
+            Perform validation at [interval]-second intervals with observation
+            data, [obs], and action data, [action]. (Also supports more than 1
+            validation sequence if desired.)
+         -out [filename]
+            Save the resulting model to the specified file. The default is
+            "model.twt".
+         -noblur
+            Do not use blurring. The default is to use blurring. Sometimes
+            blurring improves results. Sometimes not.
+         -traintime
+            Specify how many seconds to train the model. The default is 1 hour.
+         -isomap
+            Use Isomap instead of Breadth-first Unfolding if moses is used as
+            the training method.
+      [method]
+         moses
+            Use Temporal-NLDR to estimate state, then build the model using the
+            state estimate.
+         bptt [depth] [iters-per-grow-sequence]
+            Backpropagation Through Time. [depth] specifies the number of
+            instances of the transition function that will appear in the
+            unfolded model. A good value might be 3. [iters-per-grow-sequence]
+            specifies the number of pattern presentations before the sequence
+            is incremented. A good value might be 50000.
+         evolutionary
+            Train with evoluationary optimization
+         hillclimber
+            Train with a hill-climbing algorithm.
+         annealing [deviation] [decay] [window]
+            Train with simulated annealing. Good values might be 2.0 0.5 300
+[algorithm]
+   A supervised learning algorithm, or a transductive algorithm.
+   agglomerativetransducer &lt;options&gt;
+      A model-free transduction algorithm based on agglomerative clustering.
+      Unlabeled patterns take the label of the cluster into which they are
+      joined. It never joins clusters with different labels. It continues until
+      there are the same number of clusters as labels.
+      &lt;options&gt;
+         -balancingfactor [value]
+            The balancing factor is used to prevent large clusters from
+            overpowering small clusters. If [value] is large (like 3.5), it
+            favors joining small clusters together. If [value] is small (like
+            0.2), then distance between clusters will have more influence.
+   bag &lt;contents&gt; end
+      A bagging (bootstrap aggregating) ensemble. This is a way to combine the
+      power of many learning algorithms through voting. "end" marks the end of
+      the ensemble contents.
+      &lt;contents&gt;
+         [instance_count] [algorithm]
+            Specify the number of instances of a learning algorithm to add to
+            the bagging ensemble.
+   baseline
+      This is one of the simplest of all supervised algorithms. It ignores all
+      features. For nominal labels, it always predicts the most common class in
+      the training set. For continuous labels, it always predicts the mean
+      label in the training set. An effective learning algorithm should never
+      do worse than baseline--hence the name "baseline".
+   bucket &lt;contents&gt; end
+      This uses cross-validation with the training set to select the best model
+      from a bucket of models. When accuracy is measured across multiple
+      datasets, it will usually do better than the best model in the bucket
+      could do. "end" marks the end of the contents of the bucket.
+      &lt;contents&gt;
+         [algorithm]
+            Add an algorithm to the bucket
+   nominaltocat &lt;options&gt; [algorithm]
+      This is a filter that wraps another model. It is sort-of the opposite of
+      discretize. It converts each nominal attribute to a categorical
+      distribution by representing each value using the corresponding row of
+      the identity matrix. For example, if a certain nominal attribute has 4
+      possible values, then a value of 3 would be encoded as the vector 0 0 1
+      0. When predictions are converted back to nominal values, the mode of the
+      categorical distribution is used as the predicted value. (This is similar
+      to Weka's NominalToBinaryFilter.)
+      &lt;options&gt;
+         -maxvalues [cap]
+            If a nominal attribute has more than [cap] possible values, then it
+            will simply enumerate them instead of creating a separate dimension
+            for each possible value. This is somewhat of a safety-net to ensure
+            that the dimensionality doesn't explode. The default is 12.
+         -notfeatures
+            Don't convert features (inputs) to categorical distributions.
+         -notlabels
+            Don't convert the labels (outputs) to categorical distributions.
+   decisiontree &lt;options&gt;
+      A decision tree.
+      &lt;options&gt;
+         -random [draws]
+            Use random divisions (instead of divisions that reduce entropy).
+            Random divisions make the algorithm train faster, and also increase
+            model variance, so it is better suited for ensembles, but random
+            divisions also make the decision tree more vulnerable to problems
+            with irrelevant features. [draws] is typically 1, but if you
+            specify a larger value, it will pick the best out of the specified
+            number of random draws.
+         -leafthresh [n]
+            When building the tree, if the number of samples is &lt;= this value,
+            it will stop trying to divide the data and will create a leaf node.
+            The default value is 1. For noisy data, larger values may be
+            advantageous.
+   discretize &lt;options&gt; [algorithm]
+      This is a filter that wraps another model. It discretizes the features
+      before passing them to the model, and then undiscretizes any predicted
+      labels before passing them back to the caller. This is useful with
+      algorithms that only support nominal features, and/or labels, like
+      naivebayes.
+      &lt;options&gt;
+         -buckets [count]
+            Specify the number of buckets to use. The default is the floor of
+            the square root of the number of rows in the training set.
+         -notfeatures
+            Don't discretize the features (inputs).
+         -notlabels
+            Don't discretize the labels (outputs).
+   graphcuttransducer [neighbors]
+      This is a model-free transduction algorithm. It uses a min-cut/max-flow
+      graph-cut algorithm to separate each label from all of the others.
+      [neighbors]
+         The number of neighbors to connect with each point in order to form
+         the graph.
+   knn [k] &lt;options&gt;
+      The k-Nearest-Neighbor instance-based learning algorithm. It uses
+      Euclidean distance for continuous features and Hamming distance for
+      nominal features.
+      [k]
+         The number of neighbors to use
+      &lt;options&gt;
+         -equalweight
+            Give equal weight to every neighbor. (The default is to use linear
+            weighting for continuous features, and sqared linear weighting for
+            nominal features.
+         -scalefeatures
+            Use a hill-climbing algorithm on the training set to scale the
+            feature dimensions in order to give more accurate results. This
+            increases training time, but also improves accuracy and robustness
+            to irrelevant features.
+   meanmarginstree
+      This is a very simple linear combination tree. (A powerful model can be
+      created using a bagging ensemble of buckets, that each contain one
+      decision tree and one mean margins tree. This combination has been shown
+      to do better than even much larger ensembles of random trees.)
+   naivebayes &lt;options&gt;
+      The naive Bayes learning algorithm. Supports only discrete features and
+      labels, so it is common to wrap it with a discretizing filter.
+      &lt;options&gt;
+         -ess [value]
+            Specifies an equivalent sample size to prevent unsampled values
+            from dominating the joint distribution. Good values typically range
+            between 0 and 1.5.
+   naiveinstance [neighbors]
+      This is an instance learner that assumes each dimension is conditionally
+      independant from other dimensions. It lacks the accuracy of knn in low
+      dimensional feature space, but scales much better to high dimensionality.
+      It only supports continuous values, so it is common to wrap it in a
+      nominaltocat filter.
+   neighbortransducer [neighbors] &lt;options&gt;
+      This is a model-free transduction algorithm. It is an instance learner
+      that propagates labels where the neighbors are most in agreement. This
+      algorithm does well when classes sample a manifold (such as with text
+      recognition).
+      &lt;options&gt;
+         -friends [intrinsic-dims] [alpha] [beta]
+            Use the manifold-friend-finding algorithm instead of the nearest
+            Euclidean neighbors.
+         -prune
+            Prune shortcuts. (Only effective if used with the -friends option.)
+   neuralnet &lt;options&gt;
+      A single or multi-layer feed-forward neural network of logistic units. It
+      is trained with online backpropagation. Only continuous values are
+      supported, so it is common to wrap it in a nominaltocat filter so it can
+      handle discrete attributes too. It is also common to wrap that in a
+      normalizing filter, to ensure that any continuous inputs are within a
+      reasonable range.
+      &lt;options&gt;
+         -addlayer [size]
+            Add a hidden layer with "size" logisitic units to the network. You
+            may use this option multiple times to add multiple layers. The
+            first layer added is adjacent to the input features. The last layer
+            added is adjacent to the output labels. If you don't add any hidden
+            layers, the network is just a single layer of sigmoid units.
+         -learningrate [value]
+            Specify a value for the learning rate. The default is 0.1
+         -momentum [value]
+            Specifies a value for the momentum. The default is 0.0
+         -windowepochs [value]
+            Specifies the number of training epochs that are performed before
+            the stopping criteria is tested again. Bigger values will result in
+            a more stable stopping criteria. Smaller values will check the
+            stopping criteria more frequently.
+         -minwindowimprovement [value]
+            Specify the minimum improvement that must occur over the window of
+            epochs for training to continue. [value] specifies the minimum
+            decrease in error as a ratio. For example, if value is 0.02, then
+            training will stop when the mean squared error does not decrease by
+            two percent over the window of epochs. Smaller values will
+            typically result in longer training times.
+         -dontsquashoutputs
+            Don't squash the outputs values with the logistic function. Just
+            report the net value at the output layer. This is often used for
+            regression.
+         -crossentropy
+            Use cross-entropy instead of squared-error for the error signal.
+   normalize &lt;options&gt; [algorithm]
+      This is a filter that wraps another model. It scales and translates
+      real-valued data to fall within a specified range. Nominal attributes
+      pass through unaltered.
+      &lt;options&gt;
+         -range [min] [max]
+            Specify the target range. The default is 0 1.
+         -notfeatures
+            Don't normalize the features (inputs).
+         -notlabels
+            Don't normalize the labels (outputs).
+   pca [target-dims] [algorithm]
+      This is a filter that wraps another model. It performs principle
+      component analysis to reduce the dimensionality of the features (inputs)
+      before passing them to the wrapped model.
+      [target-dims]
+         The number of target dimensions in the feature vector.
+
+</pre>
+</body>
+</html>
