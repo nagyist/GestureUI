@@ -1,0 +1,91 @@
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <algorithm>
+#include <vector>
+
+using namespace std;
+
+// define the datatype that represents a gesture
+struct Point
+{
+  Point(){}
+  Point(float x, float y, float z, float pitch, float roll, float yaw)
+    :x(x), y(y), z(z), pitch(pitch), roll(roll), yaw(yaw){}
+
+  // define io related functions for debugging
+  friend istream& operator>> (istream& in, Point& p);
+  friend ostream& operator<< (ostream& out, Point& p);
+
+  float x;
+  float y;
+  float z;
+  float pitch;
+  float roll;
+  float yaw;
+};
+
+
+typedef enum
+  {
+    PUSH,
+    WAVE
+  } GestureType;
+
+/**
+ * \class Gesture
+ *
+ * Each gesture is composed of a sequence of motion points
+ * and a label depicting its semantic
+ */
+class Gesture 
+{
+public:
+
+  // visualize the gesture
+  void draw();
+
+  // append a new point at the end of the gesture sequence
+  void append(Point* point);
+  
+  // compute the distance of two gestures
+  // this is the logic 
+  float distance();
+
+  void setType(GestureType type){type_gesture = type;}
+  GestureType getType(){return type_gesture;}
+
+  friend istream& operator>> (istream& in, Gesture& g);
+  friend ostream& operator<< (ostream& out, Gesture& g);
+   
+
+private:
+  vector<Point*> data;
+  GestureType type_gesture;
+};
+
+
+// define a database holding gestures
+typedef vector<Gesture*> GestureSeq;
+class GestureDB 
+{
+public:
+  GestureDB(){}
+  GestureDB(const char* file_name):file_name(file_name){}
+  void load();
+  void save();
+  void append(Gesture* g);
+  void remove();  
+  Gesture* findNext();  
+
+  friend ostream& operator<< (ostream& out, GestureDB& db);
+
+  // find the k-nearest neighbors
+  void findNearest(int k);
+  
+private:
+  const char* file_name;
+  GestureSeq data;
+};
+
+

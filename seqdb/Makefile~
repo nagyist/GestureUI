@@ -1,0 +1,17 @@
+all: libseqdb.so
+
+CC = gcc
+CFLAGS = -O2
+
+SRC = $(shell ls *.cpp)
+OBJ = $(SRC:.cpp=.o)
+
+%.o: %.cpp
+	$(CC) -fPIC -c $^
+
+libseqdb.so: $(OBJ)
+	$(CC) -O2 -shared -fPIC -Wl,-soname,$@ -o $@ $^
+	#ln -s $@.1 ../bin/$@
+
+clean:
+	rm *.o libseqdb.so
