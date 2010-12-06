@@ -10,8 +10,12 @@ int main()
   /// fetch the 7th gesture
   Gesture* gesture = db[7];
   cout<<*gesture<<endl;
+  cout<<gesture->numPoint();
 
-  gesture->sample(13);
+  gesture->filter();
+  //cout<<gesture->numPoint();
+
+  gesture->sample(17);
   cout<<*gesture<<endl;
 
   //db.save();

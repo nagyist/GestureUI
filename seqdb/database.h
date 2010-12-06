@@ -6,6 +6,7 @@
 #include <sstream>
 #include <algorithm>
 #include <vector>
+#include <list>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -22,6 +23,19 @@ struct Point
   Point(){}
   Point(float x, float y, float z, float acc_x, float acc_y, float acc_z, float pitch, float roll, float yaw)
     :x(x), y(y), z(z), acc_x(acc_x), acc_y(acc_y), acc_z(acc_z), pitch(pitch), roll(roll), yaw(yaw){}
+  Point(Point* p)
+  {
+    x = p->x;
+    y = p->y;
+    z = p->z;
+    acc_x = p->acc_x;
+    acc_y = p->acc_y;
+    acc_z = p->acc_z;
+    pitch = p->pitch;
+    roll = p->roll;
+    yaw = p->yaw;
+  }
+  
 
   // define io related functions for debugging
   friend istream& operator>> (istream& in, Point& p);

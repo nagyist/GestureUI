@@ -206,6 +206,9 @@ void Gesture::sample(int n)
   vector<Point*>::iterator gesiter = data.begin();
   int num_pts = data.size();
 
+  if ( (num_pts < n) && ( n > 60 ) )
+    n = max(60, num_pts);
+
   /// delete points if we have more than n points
   if ( num_pts > n )
     while ( num_pts > n )
@@ -221,18 +224,23 @@ void Gesture::sample(int n)
 	num_pts = data.size();
 	//cout<<"sampling: "<<num_pts - n<<" pts to remove"<<endl;
       }
-  
+
   /// insert points if we have less than n points
   else if ( num_pts < n )
     while ( num_pts < n )
       {
-	if ( rand()/RAND_MAX > 0.5 )
-	  data.insert(gesiter, *gesiter);
+	if ( gesiter == data.end() )
+	  gesiter = data.begin();
+       	
+	if ( ((float)rand())/RAND_MAX > 0.5 )
+	  data.insert(gesiter, new Point(*gesiter));	
+	
+	++gesiter;
 	
 	//if ( ++gesiter == data.end() )
 	//gesiter = data.begin();	
 	num_pts = data.size();
-	//cout<<"Inserting: "<<num_pts<<endl;
+	cout<<"sampling: "<<n - num_pts<<" pts to add"<<endl;
       }  
 }
 
@@ -240,17 +248,26 @@ void Gesture::sample(int n)
 /// apply some simple filters
 void Gesture::filter()
 {
-  float delta_thresh = 0.2;
+  float delta_thresh = 2;
   
-  vector<Point*>::iterator gesiter = data.begin();
+  vector<Point*>::iterator prev = data.begin();
+  vector<Point*>::iterator curr = data.begin() + 1;
+  if ( curr == data.end() )
+    return;
   int num_pts = data.size();
-  
+
   /// delete points if they are similar from their predecessors
-  while ( ++gesiter != data.end() );  
+  while ( 1 )
     {
       /// we take the infinite minkovski norm
-      if ( minkovski_inf(*gesiter, *(gesiter-1)) < delta_thresh )
-	data.erase(gesiter);
+      float dist = minkovski_inf(*prev, *curr);
+      cout<< dist << endl;
+      if ( dist < delta_thresh )
+	data.erase(curr++);
+      else
+	  prev = curr++;
+      if ( curr == data.end() )
+	return;      
     }
 }
 
@@ -275,7 +292,7 @@ inline float dist_l1(Gesture* g1, Gesture* g2)
       //res += abs((*g1)[i] - (*g2)[i]);
       res += score((*g1)[i], (*g2)[i]);
     }
-
+  
   return res;  
 }
 
