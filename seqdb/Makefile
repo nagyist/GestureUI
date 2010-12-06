@@ -1,6 +1,6 @@
-all: libseqdb.so
+all: seqdb_test
 
-CC = gcc
+CC = g++
 CFLAGS = -O2
 
 SRC = $(shell ls *.cpp)
@@ -9,10 +9,8 @@ OBJ = $(SRC:.cpp=.o)
 %.o: %.cpp
 	$(CC) -fPIC -c $^
 
-libseqdb.so: $(OBJ)
-	$(CC) -O2 -shared -fPIC -Wl,-soname,$@.1 -o $@.1 $^
-	ln -s $@.1 $@ 
-	ln -s $@ ../bin/$@
+seqdb_test: $(SRC)
+	$(CC) $^ -o $@
 
 clean:
-	rm *.o libseqdb.so
+	rm *.o seqdb_test

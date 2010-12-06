@@ -103,11 +103,26 @@ inline float minkovski_l2(Point* p1, Point* p2)
 	       pow(p1->z - p2->z, 2) +
 	       pow(p1->acc_x - p2->acc_x, 2) + 
 	       pow(p1->acc_y - p2->acc_y, 2) +
-	       pow(p2->acc_z - p2->acc_z, 2) +
+	       pow(p1->acc_z - p2->acc_z, 2) +
 	       pow(p1->pitch - p2->pitch, 2) + 
 	       pow(p1->roll - p2->roll, 2) + 
 	       pow(p1->yaw - p2->yaw, 2) );
 }
+
+
+inline float minkovski_inf(Point* p1, Point* p2)
+{
+  max(max(
+	  max( abs(p1->x - p2->x), abs(p1->y - p2->y) ),
+	  max( abs(p1->z - p2->z), abs(p1->acc_x - p2->acc_x) )),
+      max(
+	  max(
+	      max( abs(p1->acc_y - p2->acc_y), abs(p1->acc_z - p2->acc_z) ),
+	      max( abs(p1->pitch - p2->pitch), abs(p1->roll - p2->roll) )), 
+	  abs(p1->yaw - p2->yaw)));
+  
+}
+
 
 
 /// we can't find a good way to determine weights
@@ -180,6 +195,66 @@ void Gesture::append(Point* point)
 {
   data.push_back(point);
 }
+
+
+/////////////////////////////////////////////////
+/// Data Preprocessing
+/////////////////////////////////////////////////
+void Gesture::sample(int n)
+{
+  srand(time(NULL));
+  vector<Point*>::iterator gesiter = data.begin();
+  int num_pts = data.size();
+
+  /// delete points if we have more than n points
+  if ( num_pts > n )
+    while ( num_pts > n )
+      {	
+	if ( gesiter == data.end() )
+	  gesiter = data.begin();
+
+	if ( ((float)rand())/RAND_MAX > 0.5 )
+	    data.erase(gesiter);
+	else
+	  ++gesiter;
+	
+	num_pts = data.size();
+	//cout<<"sampling: "<<num_pts - n<<" pts to remove"<<endl;
+      }
+  
+  /// insert points if we have less than n points
+  else if ( num_pts < n )
+    while ( num_pts < n )
+      {
+	if ( rand()/RAND_MAX > 0.5 )
+	  data.insert(gesiter, *gesiter);
+	
+	//if ( ++gesiter == data.end() )
+	//gesiter = data.begin();	
+	num_pts = data.size();
+	//cout<<"Inserting: "<<num_pts<<endl;
+      }  
+}
+
+
+/// apply some simple filters
+void Gesture::filter()
+{
+  float delta_thresh = 0.2;
+  
+  vector<Point*>::iterator gesiter = data.begin();
+  int num_pts = data.size();
+  
+  /// delete points if they are similar from their predecessors
+  while ( ++gesiter != data.end() );  
+    {
+      /// we take the infinite minkovski norm
+      if ( minkovski_inf(*gesiter, *(gesiter-1)) < delta_thresh )
+	data.erase(gesiter);
+    }
+}
+
+
 
 /////////////////////////////////////////////////
 /// Distance

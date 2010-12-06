@@ -45,6 +45,7 @@ struct Point
 
 inline float minkovski_l1(Point* p1, Point* p2);
 inline float minkovski_l2(Point* p1, Point* p2);
+inline float minkovski_inf(Point* p1, Point* p2);
 inline float sigmoid(Point* p1, Point* p2);
 
 
@@ -91,11 +92,14 @@ public:
   /// the latter case is based on curvature
   void sample(int n);
   
+  /// vectorize the points using VQ
+  void vectorize();
+  
   /// apply the filters described in the German paper
   void filter();
   
   /// transform the data and give it to the svm learner
-  void transform(char* file_name);
+  void format_svm(char* file_name);
 
   Point* operator[](unsigned int idx){return idx<data.size() ? data[idx]: NULL;} 
 
@@ -134,6 +138,8 @@ public:
   void remove();  
   size_t size(){ return data.size(); };
   Gesture* findNext();  
+
+  Gesture* operator[](size_t idx){ return data[idx]; }
 
   friend ostream& operator<< (ostream& out, GestureDB& db);
 

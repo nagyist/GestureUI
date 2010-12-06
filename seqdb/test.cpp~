@@ -1,0 +1,15 @@
+#include <iostream>
+#include "database.h"
+
+int main()
+{
+  GestureDB* db = new GestureDB("gesture_data.db");
+  db->load();
+
+  cout<<*db<<endl;
+
+  db->save();
+
+  delete db;
+  return 0;
+}
