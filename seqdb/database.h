@@ -1,17 +1,27 @@
+#ifndef __GESTURE_DATABASE_H__
+#define __GESTURE_DATABASE_H__
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <algorithm>
 #include <vector>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
+
 
 using namespace std;
+
+class Gesture;
+class GestureDB;
 
 // define the datatype that represents a gesture
 struct Point
 {
   Point(){}
-  Point(float x, float y, float z, float pitch, float roll, float yaw)
-    :x(x), y(y), z(z), pitch(pitch), roll(roll), yaw(yaw){}
+  Point(float x, float y, float z, float acc_x, float acc_y, float acc_z, float pitch, float roll, float yaw)
+    :x(x), y(y), z(z), acc_x(acc_x), acc_y(acc_y), acc_z(acc_z), pitch(pitch), roll(roll), yaw(yaw){}
 
   // define io related functions for debugging
   friend istream& operator>> (istream& in, Point& p);
@@ -20,22 +30,39 @@ struct Point
   float x;
   float y;
   float z;
+  float acc_x;
+  float acc_y;
+  float acc_z;
   float pitch;
   float roll;
   float yaw;
 };
 
-inline float score_l1(Point* p1, Point* p2);
-inline float score_l2(Point* p1, Point* p2);
+
+/////////////////////////////////////////////////
+/// compute the distance of two gestures
+/////////////////////////////////////////////////
+
+inline float minkovski_l1(Point* p1, Point* p2);
+inline float minkovski_l2(Point* p1, Point* p2);
+inline float sigmoid(Point* p1, Point* p2);
+
 
 
 typedef enum
   {
     PUSH,
-    WAVE
+    WAVE,
+    SQUARE,
+    CIRCLE,
+    FOUR,
+    NINE
   } GestureType;
-#define NUM_GESTURETYPE 2
+#define NUM_GESTURETYPE 6
 
+GestureType idx2ges(int idx);
+int ges2idx(GestureType ges_t);
+const char* ges2str(GestureType ges_t);
 
 
 /**
@@ -48,10 +75,10 @@ class Gesture
 {
 public:
 
-  // visualize the gesture
+  /// visualize the gesture
   void draw();
 
-  // append a new point at the end of the gesture sequence
+  /// append a new point at the end of the gesture sequence
   void append(Point* point);
   
   void setType(GestureType type){type_gesture = type;}
@@ -85,6 +112,7 @@ private:
 /////////////////////////////////////////////////
 /// compute the distance of two gestures
 /////////////////////////////////////////////////
+inline float score(Point* p1, Point* p2);
 inline float dist_l1(Gesture* g1, Gesture* g2);
 inline float dist_l2(Gesture* g1, Gesture* g2);
 inline float frechet(Gesture* g1, Gesture* g2);
@@ -104,6 +132,7 @@ public:
   void save();
   void append(Gesture* g);
   void remove();  
+  size_t size(){ return data.size(); };
   Gesture* findNext();  
 
   friend ostream& operator<< (ostream& out, GestureDB& db);
@@ -122,3 +151,4 @@ private:
 };
 
 
+#endif

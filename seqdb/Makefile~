@@ -1,17 +1,19 @@
 all: libseqdb.so
 
-CC = gcc
-CFLAGS = -O2
+CC = g++-4.4
+CFLAGS = -O2 -I../math
+LDFLAGS = -Wall -pipe -fPIC -funroll-loops
 
-SRC = $(shell ls *.cpp)
+#SRC = $(shell ls *.cpp)
+SRC = Point.cpp Gesture.cpp database.cpp
 OBJ = $(SRC:.cpp=.o)
 
-%.o: %.cpp
-	$(CC) -fPIC -c $^
+# %.o: %.cpp
+# 	$(CC) -fPIC -c $^ $(CFLAGS)
 
-libseqdb.so: $(OBJ)
-	$(CC) -O2 -shared -fPIC -Wl,-soname,$@ -o $@ $^
-	#ln -s $@.1 ../bin/$@
+libseqdb.so: $(SRC)
+	$(CC) -O2 $(LDFLAGS) -shared -fPIC -Wl,-soname,$@.1 -o $@.1 $^ -lm
+	ln -sf $@.1 $@ 	
 
 clean:
 	rm *.o libseqdb.so

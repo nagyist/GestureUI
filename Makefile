@@ -5,7 +5,7 @@
 #
 # Change this to your GCC version.
 #
-CC = g++
+CC = g++-4.4
 debug=0
 
 ####################################################
@@ -17,6 +17,7 @@ debug=0
 #
 # Universal cflags
 #
+#CFLAGS = -Wall -pipe -fPIC -funroll-loops
 CFLAGS = -Wall -pipe -fPIC -funroll-loops
 
 ifeq ($(debug),1)
@@ -34,22 +35,22 @@ OBJ_DIR = .
 # Linking flags
 #
 #LDFLAGS = -L../src/$(OBJ_DIR) -lm -lwiiuse
-LDFLAGS = -L./lib -lm -lwiiuse -lseqdb
+LDFLAGS = -L./lib -L$(OBJ_DIR) -lm -lwiiuse
 
 #
 # Target binaries (always created as BIN)
 #
-BIN = ./bin/gesture3d
+BIN = ./gesture3d
 
 #
 # Inclusion paths.
 #
-INCLUDES = -I./libwiiuse -I./libseqdb
+INCLUDES = -I./libwiiuse -I./seqdb -I./math
 
 #
 # Generate a list of object files
 #
-OBJS = $(OBJ_DIR)/gesture3d.o 
+OBJS = $(OBJ_DIR)/gesture3d.o ./seqdb/database.o
 
 ###############################
 #
@@ -72,7 +73,7 @@ install:
 
 
 $(BIN): $(OBJS) 
-	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $(BIN)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $@
 
 $(OBJ_DIR)/%.o: %.cpp
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
@@ -83,5 +84,5 @@ mkdir:
 	fi
 
 run: all
-	LD_LIBRARY_PATH=`pwd`/../src/$(OBJ_DIR):$(LD_LIBRARY_PATH) $(BIN)
+	LD_LIBRARY_PATH=`pwd`/../src/$(OBJ_DIR):./seqdb:$(LD_LIBRARY_PATH) $(BIN)
 

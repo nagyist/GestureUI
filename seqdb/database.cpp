@@ -1,12 +1,70 @@
-#include "database.h"
 #include <cmath>
 #include <cstring>
+#include <iostream>
 #include <list>
+
+#include "database.h"
+
+using namespace std;
+
+
+GestureType idx2ges(int idx)
+{
+  return (GestureType)idx;
+}
+
+
+int ges2idx(GestureType ges_t)
+{
+  return (int)ges_t;
+}
+
+const char* ges2str(GestureType ges_t)
+{
+  switch(ges_t)
+    {
+    case PUSH:
+      return "PUSH";
+      break;
+    case WAVE:
+      return "WAVE";
+      break;
+    case CIRCLE:
+      return "CIRCLE";
+      break;
+    case SQUARE:
+      return "SQUARE";
+      break;
+    case FOUR:
+      return "FOUR";
+      break;
+    case NINE:
+      return "NINE";
+      break;      
+    default:
+      return "UNKNOWN";
+      break;
+    }
+}
+
+
+inline ostream& operator<< (ostream& out, GestureDB& db)
+{
+  Gesture *ptr_g;
+  int count = 0;
+  
+  // we also want to add meta data to the record
+  while ( (ptr_g = db.findNext()) && (++count) )
+    out<<"# gesture #"<<count<<endl<<*ptr_g<<endl;
+  return out;
+}
 
 
 inline istream& operator>> (istream& in, Point& p)
 {
-  return in>>p.x>>p.y>>p.z>>p.pitch>>p.roll>>p.yaw;
+  return in>>p.x>>p.y>>p.z
+	   >>p.acc_x>>p.acc_y>>p.acc_z
+	   >>p.pitch>>p.roll>>p.yaw;
 }
 
 
@@ -15,9 +73,55 @@ inline ostream& operator<< (ostream& out, Point& p)
   return out<<p.x<<" "
 	    <<p.y<<" "
 	    <<p.z<<" "
+	    <<p.acc_x<<" "
+	    <<p.acc_y<<" "
+	    <<p.acc_z<<" "
 	    <<p.pitch<<" "
 	    <<p.roll<<" "
 	    <<p.yaw;  
+}
+
+
+inline float minkovski_l1(Point* p1, Point* p2)
+{
+  return ( abs(p1->x - p2->x) + 
+	   abs(p1->y - p2->y) +
+	   abs(p1->z - p2->z) +
+	   abs(p1->acc_x - p2->acc_x) + 
+	   abs(p1->acc_y - p2->acc_y) +
+	   abs(p1->acc_z - p2->acc_z) +
+	   abs(p1->pitch - p2->pitch) + 
+	   abs(p1->roll - p2->roll) + 
+	   abs(p1->yaw - p2->yaw) );
+}
+
+
+inline float minkovski_l2(Point* p1, Point* p2)
+{
+  return sqrt( pow(p1->x - p2->x, 2) + 
+	       pow(p1->y - p2->y, 2) +
+	       pow(p1->z - p2->z, 2) +
+	       pow(p1->acc_x - p2->acc_x, 2) + 
+	       pow(p1->acc_y - p2->acc_y, 2) +
+	       pow(p2->acc_z - p2->acc_z, 2) +
+	       pow(p1->pitch - p2->pitch, 2) + 
+	       pow(p1->roll - p2->roll, 2) + 
+	       pow(p1->yaw - p2->yaw, 2) );
+}
+
+
+/// we can't find a good way to determine weights
+inline float sigmoid(Point* p1, Point* p2)
+{
+  return 1/(1 + exp(sqrt( pow(p1->x - p2->x, 2) + 
+			  pow(p1->y - p2->y, 2) +
+			  pow(p1->z - p2->z, 2) +
+			  pow(p1->acc_x - p2->acc_x, 2) + 
+			  pow(p1->acc_y - p2->acc_y, 2) +
+			  pow(p2->acc_z - p2->acc_z, 2) +
+			  pow(p1->pitch - p2->pitch, 2) + 
+			  pow(p1->roll - p2->roll, 2) + 
+			  pow(p1->yaw - p2->yaw, 2) )));
 }
 
 
@@ -37,6 +141,23 @@ inline ostream& operator<< (ostream& out, Gesture& g)
     case WAVE:
       out<<"@ WAVE"<<endl;
       break;
+
+    case CIRCLE:
+      out<<"@ CIRCLE"<<endl;
+      break;
+   
+    case SQUARE:
+      out<<"@ SQUARE"<<endl;
+      break;
+      
+    case FOUR:
+      out<<"@ FOUR"<<endl;
+      break;
+
+    case NINE:
+      out<<"@ NINE"<<endl;
+      break;
+      
     default:
       out<<"@ UNKNOWN"<<endl;
       break;
@@ -50,18 +171,6 @@ inline ostream& operator<< (ostream& out, Gesture& g)
 }
 
 
-inline ostream& operator<< (ostream& out, GestureDB& db)
-{
-  Gesture *ptr_g;
-  int count = 0;
-  
-  // we also want to add meta data to the record
-  while ( (ptr_g = db.findNext()) && (++count) )
-    out<<"# gesture #"<<count<<endl<<*ptr_g<<endl;
-  return out;
-}
-
-
 // visualize the gesture
 void Gesture::draw(){}
 
@@ -71,17 +180,25 @@ void Gesture::append(Point* point)
 {
   data.push_back(point);
 }
-  
 
 /////////////////////////////////////////////////
 /// Distance
 /////////////////////////////////////////////////
+
+inline float score(Point* p1, Point* p2)
+{
+  return (p1 == NULL || p2 == NULL)? -2 : sigmoid(p1, p2);
+  //return (p1 == NULL || p2 == NULL)? -1 : 1/(1+minkovski_l2(p1, p2));
+}
+
+
 inline float dist_l1(Gesture* g1, Gesture* g2)
 {
   float res = 0.0f;
   for (int i=0; i<min(g1->numPoint(), g2->numPoint()); ++i)
     {
-      res += abs((*g1)[i] - (*g2)[i]);
+      //res += abs((*g1)[i] - (*g2)[i]);
+      res += score((*g1)[i], (*g2)[i]);
     }
 
   return res;  
@@ -93,38 +210,15 @@ inline float dist_l2(Gesture* g1, Gesture* g2)
   float res = 0.0f;
   for (int i=0; i<min(g1->numPoint(), g2->numPoint()); ++i)
     {
-      res += pow((*g1)[i] - (*g2)[i], 2);
+      //res += pow((*g1)[i] - (*g2)[i], 2);
+      res += pow(score((*g1)[i], (*g2)[i]), 2);
     }
   
+  //return res;
   return sqrt(res);  
 }
   
 
-inline float score_l1(Point* p1, Point* p2)
-{
-  return ( abs(p1->x - p2->x) + 
-	   abs(p1->y - p2->y) +
-	   abs(p1->z - p2->z) +
-	   abs(p1->pitch - p2->pitch) + 
-	   abs(p1->roll - p2->roll) + 
-	   abs(p1->yaw - p2->yaw) );
-}
-
-
-inline float score_l2(Point* p1, Point* p2)
-{
-  return 1/(1 + exp(sqrt( pow(p1->x - p2->x, 2) + 
-			  pow(p1->y - p2->y, 2) +
-			  pow(p1->z - p2->z, 2) +
-			  pow(p1->pitch - p2->pitch, 2) + 
-			  pow(p1->roll - p2->roll, 2) + 
-			  pow(p1->yaw - p2->yaw, 2) )));
-}
-
-inline float score(Point* p1, Point* p2)
-{
-  return (p1 == NULL || p2 == NULL)? -1 : score_l2(p1, p2);
-}
 
 float smith_waterman(Gesture* g1, Gesture* g2)
 {
@@ -139,13 +233,15 @@ float smith_waterman(Gesture* g1, Gesture* g2)
   for ( int j=1; j<len2; ++j )
     for ( int i=1; i<len1; ++i )
       {	
-	float tmp = max( max( score( (*g1)[i], (*g2)[j-1] ) + score_buf[i],
-			      score( (*g1)[i-1], (*g2)[j] ) + prev_l ),
-			 score( (*g1)[i-1], (*g1)[j-1] ) + score_buf[i-1] );
-	score_buf[i-1] = prev_l;
-	prev_l = tmp;
-	best = max(best, tmp);
+  	float tmp = max( max( score( (*g1)[i], (*g2)[j-1] ) + score_buf[i],
+  			      score( (*g1)[i-1], (*g2)[j] ) + prev_l ),
+  			 score( (*g1)[i-1], (*g1)[j-1] ) + score_buf[i-1] );
+	
+  	score_buf[i-1] = prev_l;
+  	prev_l = tmp;
+  	best = max(best, tmp);
       }
+
   return best;
 }
 
@@ -164,6 +260,12 @@ void GestureDB::load()
 {
   ifstream fin;
   fin.open(file_name);
+
+  if ( !fin )
+    {
+      cerr<<"Error: cannot open the database file "<<file_name<<endl;
+      return;
+    }
   
   /// check if the file is corrupted
   /// check if the file is empty 
@@ -205,6 +307,14 @@ void GestureDB::load()
 	    ptr_g->setType(PUSH);
 	  else if ( label == "WAVE" )
 	    ptr_g->setType(WAVE);
+	  else if ( label == "CIRCLE" )
+	    ptr_g->setType(CIRCLE);
+	  else if ( label == "SQUARE" )
+	    ptr_g->setType(SQUARE);
+ 	  else if ( label == "FOUR" )
+	    ptr_g->setType(FOUR);
+	  else if ( label == "NINE" )
+	    ptr_g->setType(NINE);
 
 	  continue;
 	}
@@ -219,6 +329,7 @@ void GestureDB::load()
       ptr_g->append(ptr_p);	  
       ptr_p = new Point();	  
     }  
+
 
   //cout<<*this<<endl;
 
@@ -244,11 +355,11 @@ void GestureDB::append(Gesture* g)
 
 void GestureDB::remove()
 {
-  
+  /// do nothing
 }
 
 
-// find the next element in the sequence
+/// find the next element in the sequence
 Gesture* GestureDB::findNext()
 {
   static size_t curr_idx = 0;
@@ -261,6 +372,9 @@ Gesture* GestureDB::findNext()
 }
 
 
+/// compute the distance of two gestures 
+/// calls one of the distance metrices 
+/// in the gesture library
 inline float distance(Gesture* g1, Gesture* g2)
 {
   //return dist_l2(g1, g2);
@@ -268,7 +382,7 @@ inline float distance(Gesture* g1, Gesture* g2)
 }
 
 
-// find the k-nearest neighbors
+/// find the k-nearest neighbors
 GestureType GestureDB::kNN(Gesture* query, int k)
 {
   //map<float, Gesture*> knn_map;
@@ -289,13 +403,22 @@ GestureType GestureDB::kNN(Gesture* query, int k)
       float curr_dist = distance(query, curr_ges);
       list<float>::iterator weight_iter = weight.begin();
       list<Gesture*>::iterator knn_iter = knn.begin();	  
+      
+      bool is_added = false;
       for (; knn_iter != knn.end(); ++knn_iter, ++weight_iter )	  
 	if ( *weight_iter < curr_dist )
 	  {
 	    weight.insert(weight_iter, curr_dist);
 	    knn.insert(knn_iter, curr_ges);
+	    is_added = true;
 	    break;
 	  }
+
+      if ( (knn.size() < k) && !is_added )
+	{
+	  weight.push_back(curr_dist);
+	  knn.push_back(curr_ges);	  
+	}
 
       if ( knn.size() > k )
 	{
@@ -309,10 +432,11 @@ GestureType GestureDB::kNN(Gesture* query, int k)
   list<Gesture*>::iterator knn_iter = knn.begin();
   for (; knn_iter != knn.end(); ++knn_iter, ++weight_iter )	  
     {
-      printf("\t\t kNN: gesture type %d, smith_waterman %f\n", 
-	     (int)(*knn_iter)->getType(), *weight_iter);
+      printf("\t\t kNN: gesture type %s, smith_waterman %f\n", 
+	     ges2str((*knn_iter)->getType()), *weight_iter);
       
-      ++count[(int)(*knn_iter)->getType()];
+      //++count[(int)(*knn_iter)->getType()];
+      ++count[ges2idx((*knn_iter)->getType())];
     }
 
   GestureType majority = (GestureType) 0;

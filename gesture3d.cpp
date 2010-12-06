@@ -71,7 +71,7 @@ void handle_event(struct wiimote_t* wm)
   // the event handler should be implemented as a state machine
   //static bool is_gesture_sensing = false;
   static State state = IDLE;
-  static bool is_training = false;
+  static bool is_training = true; /// default being training
   static Gesture* gesture = new Gesture();
 
   wiiuse_motion_sensing(wm, 1);
@@ -92,7 +92,12 @@ void handle_event(struct wiimote_t* wm)
   // decide if we are training or not
   if ( IS_JUST_PRESSED(wm, WIIMOTE_BUTTON_A) )
     {
-      printf("\t\t Learning Stage Changed\n");
+      printf("\t\t Learning Stage Changed\t");
+      if ( is_training )
+	  printf("from Trainig --> Testing\n");
+      else
+	printf("from Testing --> Training\n");
+
       is_training = !is_training;
     }
 
@@ -126,12 +131,19 @@ void handle_event(struct wiimote_t* wm)
     }
   
   if ( state == GESTURE_RECORDING )  
-  {
+    {
+      printf("Wiimote data recorded");
+    
       // rotation
-      printf("wiimote roll  = %f [%f]\n", wm->orient.roll, wm->orient.a_roll);
-      printf("wiimote pitch = %f [%f]\n", wm->orient.pitch, wm->orient.a_pitch);
-      printf("wiimote yaw   = %f\n", wm->orient.yaw);
+      printf("Roll  = %f [%f]\n", wm->orient.roll, wm->orient.a_roll);
+      printf("Pitch = %f [%f]\n", wm->orient.pitch, wm->orient.a_pitch);
+      printf("Yaw   = %f\n", wm->orient.yaw);
       
+      // acceleration
+      printf("Graviational Force x = %f\n", wm->gforce.x);
+      printf("Graviational Force y = %f\n", wm->gforce.y);
+      printf("Graviational Force z = %f\n", wm->gforce.z);
+
       // ir tracking
       // at most four could be tracked by a single wiimote
       for (int i=0; i < 4; ++i) 
@@ -142,16 +154,21 @@ void handle_event(struct wiimote_t* wm)
       
       printf("IR cursor: (%u, %u)\n", wm->ir.x, wm->ir.y);
       printf("IR z distance: %f\n", wm->ir.z);
+      printf("\n\n");
       
+      /// add a new point to the gesture sequence
       gesture->append(new Point(wm->ir.x,
 				wm->ir.y,
 				wm->ir.z,
+				wm->gforce.x,
+				wm->gforce.y,
+				wm->gforce.z,
 				wm->orient.pitch,
 				wm->orient.roll,
 				wm->orient.yaw));     
-  }
+    }
 
-  // recognize the gesture just recorded
+  /// recognize the gesture just recorded
   else if ( state == GESTURE_RECOGNIZING )
     {                  
       // in traing mode, user will be prompted to recognize the gesture
@@ -160,9 +177,11 @@ void handle_event(struct wiimote_t* wm)
 	  if ( IS_PRESSED(wm, WIIMOTE_BUTTON_ONE) )
 	    {
 	      printf("//////////////  Training ////////////\n");
-	      printf("\t\t Gesture Push/Pull Recorded\n");
+	      //printf("\t\t Gesture Push/Pull Recorded\n");
+	      printf("\t\t Gesture FOUR Recorded\n");
 	      // get the gesture back to the gesture database
-	      gesture->setType(PUSH);
+	      //gesture->setType(PUSH);
+	      gesture->setType(FOUR);
 	      database->append(gesture);	      
 	      gesture = new Gesture();
 
@@ -171,9 +190,10 @@ void handle_event(struct wiimote_t* wm)
 	  else if ( IS_PRESSED(wm, WIIMOTE_BUTTON_TWO) )
 	    {
 	      printf("//////////////  Training ////////////\n");
-	      printf("\t\t Gesture Wave Recorded\n");	      
+	      //printf("\t\t Gesture Wave Recorded\n");	      
+	      printf("\t\t Gesture NINE Recorded\n");	      
 	      // get the gesture back to the gesture database
-	      gesture->setType(WAVE);
+	      gesture->setType(NINE);
 	      database->append(gesture);
 	      gesture = new Gesture();
 
@@ -189,18 +209,33 @@ void handle_event(struct wiimote_t* wm)
 	  //TODO: perform simple testing
 	  //printf("\t\t I can't decide which gesture that is\n");
 	  printf("\t\t Prediction: \n");
-	  switch ( database->kNN(gesture, 7) )
-	    {
-	    case PUSH:
-	      printf("\t\t\t PUSH\n");
-	      break;
-	    case WAVE:
-	      printf("\t\t\t WAVE\n");
-	      break;
-	    default:
-	      printf("\t\t\t UNDECIDED\n");
-	      break;
-	    }
+	  GestureType pred_t = database->kNN(gesture, 7);
+	  printf("\t\t\t %s\n", ges2str(pred_t));
+	  
+	  // switch ( database->kNN(gesture, 7) )
+	  //   {
+	  //   case PUSH:
+	  //     printf("\t\t\t PUSH\n");
+	  //     break;
+	  //   case WAVE:
+	  //     printf("\t\t\t WAVE\n");
+	  //     break;
+	  //   case CIRCLE:
+	  //     printf("\t\t\t CIRCLE\n");
+	  //     break;
+	  //   case SQUARE:
+	  //     printf("\t\t\t SQUARE\n");
+	  //     break;
+	  //   case FOUR:
+	  //     printf("\t\t\t FOUR\n");
+	  //     break;
+	  //   case NINE:
+	  //     printf("\t\t\t NINE\n");
+	  //     break;
+	  //   default:
+	  //     printf("\t\t\t UNDECIDED\n");
+	  //     break;
+	  //   }
 	  
 	  delete gesture;
 	  gesture = new Gesture();
@@ -326,7 +361,7 @@ int main(int argc, char** argv)
     }  
  
 
-   for (int i=0; i<num_connected; ++i)
+  for (int i=0; i<num_connected; ++i)
     {
       //Philip: TODO: add support for muliple wiimote synergy
       wiiuse_set_leds(wiimotes[i], WIIMOTE_LED_1);
@@ -352,8 +387,14 @@ int main(int argc, char** argv)
   ///////////////////////////////////////////////////////
  
   // load the gesture database
-  database = new GestureDB("gesture_data.db");
+  database = new GestureDB("data/gesture_data.db");
   database->load();  
+  cout<<"\tGesture Data Library loaded: "<<database->size()<<" transactions in total"<<endl;
+
+  if ( database->size() == 0 )
+    {
+      cerr<<"Error: database contains no data, please collect some training data first"<<endl;
+    }
   //cout<<*database;
   
   printf("Press B to record a gesture\n");

@@ -460,9 +460,10 @@ inline bool operator !=( const Mat3<T>& a, const Mat3<T>& b ) {
 
 template <class T>
 inline std::ostream& operator <<( std::ostream& os, const Mat3<T>& m ) {
-	os << m.n[0] << " " << m.n[1] << " " << m.n[2];
-	os << m.n[3] << " " << m.n[4] << " " << m.n[5];
-	os << m.n[6] << " " << m.n[7] << " " << m.n[8];
+  os << m.n[0] << " " << m.n[1] << " " << m.n[2];
+  os << m.n[3] << " " << m.n[4] << " " << m.n[5];
+  os << m.n[6] << " " << m.n[7] << " " << m.n[8];
+  return os;
 }
 
 template <class T>
@@ -470,6 +471,7 @@ inline std::istream& operator >>( std::istream& is, Mat3<T>& m ) {
 	is >> m.n[0] >> m.n[1] >> m.n[2];
 	is >> m.n[3] >> m.n[4] >> m.n[5];
 	is >> m.n[6] >> m.n[7] >> m.n[8];
+	return is;
 }
 
 template <class T>
@@ -607,6 +609,7 @@ inline std::istream& operator >>( std::istream& is, Mat4<T>& m ) {
 	is >> m.n[ 4] >> m.n[ 5] >> m.n[ 6] >> m.n[ 7];
 	is >> m.n[ 8] >> m.n[ 9] >> m.n[10] >> m.n[11];
 	is >> m.n[12] >> m.n[13] >> m.n[14] >> m.n[15];
+	return is;
 }
 
 template <class T>
