@@ -3,13 +3,22 @@
 
 int main()
 {
-  GestureDB* db = new GestureDB("gesture_data.db");
-  db->load();
+  GestureDB db("gesture_data.db");
+  db.load();
 
-  cout<<*db<<endl;
+  //cout<<*db<<endl;
+  /// fetch the 7th gesture
+  Gesture* gesture = db[7];
+  cout<<*gesture<<endl;
+  cout<<gesture->numPoint();
 
-  db->save();
+  gesture->filter();
+  //cout<<gesture->numPoint();
 
-  delete db;
+  gesture->sample(17);
+  cout<<*gesture<<endl;
+
+  //db.save();
+
   return 0;
 }

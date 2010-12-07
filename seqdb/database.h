@@ -60,6 +60,9 @@ struct Point
 inline float minkovski_l1(Point* p1, Point* p2);
 inline float minkovski_l2(Point* p1, Point* p2);
 inline float minkovski_inf(Point* p1, Point* p2);
+inline float inner_prod(Point* p1, Point* p2);
+inline float norm_l2(Point* p);
+inline float cosine(Point* p1, Point* p2);
 inline float sigmoid(Point* p1, Point* p2);
 
 

@@ -18,6 +18,8 @@ int main()
   gesture->sample(17);
   cout<<*gesture<<endl;
 
+  cout<<"similarity score"<<smith_waterman(gesture, gesture)<<endl;
+
   //db.save();
 
   return 0;

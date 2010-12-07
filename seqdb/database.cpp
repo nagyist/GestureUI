@@ -124,6 +124,40 @@ inline float minkovski_inf(Point* p1, Point* p2)
 }
 
 
+inline float inner_prod(Point* p1, Point* p2)
+{
+  return 
+    p1->x * p2->x + 
+    p1->y * p2->y + 
+    p1->z * p2->z +
+    p1->acc_x * p2->acc_x + 
+    p1->acc_y * p2->acc_y +
+    p1->acc_z * p2->acc_z +
+    p1->roll * p2->roll + 
+    p1->pitch * p2->pitch + 
+    p1->yaw * p2->yaw;
+}
+
+
+inline float norm_l2(Point* p)
+{
+  return sqrt( pow(p->x, 2) + 
+	       pow(p->y, 2) +
+	       pow(p->z, 2) +
+	       pow(p->acc_x, 2) + 
+	       pow(p->acc_y, 2) +
+	       pow(p->acc_z, 2) +
+	       pow(p->pitch, 2) + 
+	       pow(p->roll, 2) + 
+	       pow(p->yaw, 2) );
+  
+}
+
+inline float cosine(Point* p1, Point* p2)
+{
+  return inner_prod(p1, p2) / (norm_l2(p1) * norm_l2(p2));
+}
+
 
 /// we can't find a good way to determine weights
 inline float sigmoid(Point* p1, Point* p2)
@@ -279,8 +313,9 @@ void Gesture::filter()
 
 inline float score(Point* p1, Point* p2)
 {
-  return (p1 == NULL || p2 == NULL)? -2 : sigmoid(p1, p2);
+  //return (p1 == NULL || p2 == NULL)? -2 : sigmoid(p1, p2);
   //return (p1 == NULL || p2 == NULL)? -1 : 1/(1+minkovski_l2(p1, p2));
+  return (p1 == NULL || p2 == NULL)? -0.5 : cosine(p1, p2);
 }
 
 
@@ -321,18 +356,40 @@ float smith_waterman(Gesture* g1, Gesture* g2)
   //for (int i=0; i<len1; score_buf[i]=4e7, ++i);
 
   float prev_l = 0;
+
+  /// this is the max version
   float best = 0;
   for ( int j=1; j<len2; ++j )
     for ( int i=1; i<len1; ++i )
       {	
-  	float tmp = max( max( score( (*g1)[i], (*g2)[j-1] ) + score_buf[i],
-  			      score( (*g1)[i-1], (*g2)[j] ) + prev_l ),
+	/// the commented is wrong...
+  	// float tmp = max( max( score( (*g1)[i], (*g2)[j-1] ) + score_buf[i],
+  	// 		      score( (*g1)[i-1], (*g2)[j] ) + prev_l ),
+  	// 		 score( (*g1)[i-1], (*g1)[j-1] ) + score_buf[i-1] );
+	
+	float tmp = max( max( score_buf[i], prev_l ) - 4.7f,
   			 score( (*g1)[i-1], (*g1)[j-1] ) + score_buf[i-1] );
+	
 	
   	score_buf[i-1] = prev_l;
   	prev_l = tmp;
   	best = max(best, tmp);
       }
+
+  // /// this is the min version
+  // float best = 1e7;
+  // for ( int j=1; j<len2; ++j )
+  //   for ( int i=1; i<len1; ++i )
+  //     {	
+  // 	float tmp = min( min( score( (*g1)[i], (*g2)[j-1] ) + score_buf[i],
+  // 			      score( (*g1)[i-1], (*g2)[j] ) + prev_l ),
+  // 			 score( (*g1)[i-1], (*g1)[j-1] ) + score_buf[i-1] );
+	
+  // 	score_buf[i-1] = prev_l;
+  // 	prev_l = tmp;
+  // 	best = min(best, tmp);
+  //     }
+  
 
   return best;
 }
